@@ -3,15 +3,17 @@
 {% block title %}Articles{% endblock %}
 
 {% block content %}
-<h2>Articles</h2>
-<ul class="list-group">
-     {% for article in articles %}
-        <li class="list-group-item">
-            <a href="{% url 'article_detail' article.pk %}">{{ article.title }}</a>
-            <small class="text-muted float-end">By {{ article.author }}</small>
+<h2 style="font-family: Arial, sans-serif; color: #333;">Articles</h2>
+<ul style="list-style-type: none; padding: 0;">
+    {% for article in articles %}
+        <li style="border: 1px solid #ccc; margin-bottom: 8px; padding: 10px; border-radius: 5px;">
+            <a href="{% url 'article_detail' article.pk %}" style="text-decoration: none; color: #007BFF; font-weight: bold;">
+                {{ article.title }}
+            </a>
+            <small style="float: right; color: #888;">By {{ article.author }}</small>
         </li>
     {% empty %}
-        <li class="list-group-item">No articles available.</li>
-    {% endfor %} 
+        <li style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;">No articles available.</li>
+    {% endfor %}
 </ul>
 {% endblock %}
