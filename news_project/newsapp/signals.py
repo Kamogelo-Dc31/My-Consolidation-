@@ -1,3 +1,12 @@
+"""
+This module handles signal-based notifications and permission assignments
+for the Django News Publishing application. It includes:
+
+- Assigning appropriate permissions to the Editor group.
+- Sending email notifications and optional social media updates
+  when an article is approved.
+"""
+
 import requests
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -11,6 +20,10 @@ from .models import Article, CustomUser
 
 
 def assign_editor_permissions():
+    """
+    Assigns view, change, and delete permissions for both Article and Newsletter
+    models to the 'Editor' group. Creates the group if it doesn't exist.
+    """
     editor_group, created = Group.objects.get_or_create(name='Editor')
 
     Article = apps.get_model('newsapp', 'Article')
@@ -30,6 +43,7 @@ def assign_editor_permissions():
         codename__in=['view_newsletter', 'change_newsletter', 'delete_newsletter']
     )
 
+    # Add all permissions to the group
     for perm in list(article_perms) + list(newsletter_perms):
         editor_group.permissions.add(perm)
 
@@ -37,8 +51,14 @@ def assign_editor_permissions():
 @receiver(post_save, sender=Article)
 def article_approved_signal(sender, instance, created, **kwargs):
     """
-    Notify subscribers and optionally post to X (Twitter)
-    when an article is approved.
+    Signal handler that sends email notifications to subscribers and posts
+    to X (formerly Twitter) when an article is approved.
+
+    This function:
+    - Finds all Readers subscribed to the article's publisher.
+    - Finds all Journalists subscribed to the article's author.
+    - Sends email notifications to all subscriber emails.
+    - Posts to X if TWITTER_BEARER_TOKEN is configured.
     """
     if instance.approved and not created:
         # Get all subscribers (Readers subscribed to publisher + Journalists)
